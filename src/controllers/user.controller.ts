@@ -22,7 +22,7 @@ const postCreateUser = async (req: Request, res: Response) => {
   const { name, email, address } = req.body;
 
   //handle create user
-  await handleCreateUser(name, email, address);
+  const a = await handleCreateUser(name, email, address);
 
   return res.redirect("/");
 };
@@ -43,7 +43,7 @@ const getViewUser = async (req: Request, res: Response) => {
 };
 const postUpdateUser = async (req: Request, res: Response) => {
   const { id, name, address, email } = req.body;
-  await updateUserById(id, email, address, name);
+  const a = await updateUserById(id, email, address, name);
   return res.redirect("/");
 };
 export {
