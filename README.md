@@ -6,7 +6,8 @@
 
   ```javascript
   import dotenv from "dotenv";
-  dotenv.config({ path: "/custom/path/to/.env" });
+  // lấy từ cross env
+  dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
   ```
 
 - `cross-env` cũng là 1 package giúp set và get biến môi trường thông qua scripts trong package.json mà không cần quan tâm là môi trường hđh gì:
@@ -50,17 +51,82 @@
   app.use(express.static("public"));
   ```
 
-## Setup Absolute import
+## Relative vs Absolute Path
 
-- `./`: current directory
-- `../`: move up (parent)
-- `../../../(../)`: có nghĩa là đang move tới thư mục cùng cấp với parent và trỏ vào thư mục chứa file
-- Đường dẫn thật = Thư mục chứa tsconfig + `baseUrl` + giá trị trong `paths`
-- Vẫn phải cài tsconfig-paths và thêm scripts trong nodemon:
-  ```bash
-    npm i --save-dev --save-exact tsconfig-paths@4.2.0
-    "exec": "ts-node -r tsconfig-paths/register ./src/app.ts"
+- `Relative Path`:
+  - `./`: current directory
+  - `../`: move up (parent)
+  - `cd ../`: move tới thư mục cha
+
+- `Absolute Path`:
+  - Đường dẫn thật = Thư mục chứa `tsconfig` + `baseUrl` + giá trị trong `paths`
+  - Vẫn phải cài tsconfig-paths, thêm scripts trong nodemon và cấu hình `tsconfig`:
+
+    ```json
+      npm i --save-dev --save-exact tsconfig-paths@4.2.0
+
+      "exec": "ts-node -r tsconfig-paths/register ./src/app.ts"
+
+      {
+        "compilerOptions": {
+          "baseUrl": "." //Là thư mục project,
+          "paths": {
+            "config/*": ["./src/config/*"],
+            ...
+          }
+        }
+      }
+    ```
+
+  - Tìm trong paths -> Replace thành đường dẫn relative -> combine với `baseUrl` -> final path (path dài ra tới ổ đĩa)
+
+## Import và Export (ES6)
+
+- Import chỉ để execute side effect, set biến (không cần export):
+
+  ```javascript
+  // config.js
+  console.log("Config loaded");
+  window.APP_NAME = "My App";
+
+  // main.js
+  import "./config.js";
   ```
+
+- Default import/export:
+
+  ```javascript
+  // a.js
+  export default something;
+
+  // b.js
+  import tenBatKy from "./a.js";
+  ```
+
+- Named export:
+
+  ```javascript
+  // a.js
+  export const PI = 3.14;
+  export {constA, fnB...}
+  export {maskA as MaskB}
+
+  // b.js
+  import {PI} from "./a.js";
+  import {constA} from "./a.js";
+  import {maskB} from "./a.js";
+
+  // lấy hết các export và gán lại thành 1object:
+  import * as Obj from "./a.js";
+
+  // import type thường dùng trong interface
+  import type {IUser}  ".."
+  ```
+
+- `Barrel Pattern`:
+  - Tạo 1 file index
+  - index: export \* from "ở thư mục export khác" (nhiều)
+  - import {objA1...} from "thư mục chứa index"
 
 ## Luồng MVC (SSR)
 
